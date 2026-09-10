@@ -1,0 +1,82 @@
+﻿@page "/users/edit/{Id}"
+@inject HttpClient http
+@inject NavigationManager NavMan
+@using ClassLibrary
+@using ClassLibrary.Request
+
+<h3>Edit</h3>
+
+<div class="mb-3 container">
+    <EditForm Model="@User" OnValidSubmit="@UpdateUser">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-3 form-group">
+            <label for="Email" class="form-label">Email</label><br />
+            <InputText id="Email" class="form-control" @bind-Value="User.Email" />
+            <ValidationMessage For="@(() => User.Email)" />
+        </div>
+        <div class="mb-3">
+            <label for="Password" class="form-label">Password</label><br />
+            <InputText id="Password" class="form-control" @bind-Value="User.Password" />
+            <ValidationMessage For="@(() => User.Password)" />
+        </div>
+        <div class="mb-3">
+            <label for="ConfirmPassword" class="form-label">Confirm Password</label><br />
+            <InputText id="ConfirmPassword" class="form-control" @bind-Value="User.ConfirmPassword" />
+            <ValidationMessage For="@(() => User.ConfirmPassword)" />
+        </div>
+        <div class="mb-3">
+            <label for="Role" class="form-label">Select role</label><br />
+            <select @bind="User.SelectRole" id="Role">
+                <option value=" ">--Select Role--</option>
+                @foreach (var role in Roles)
+                {
+                    <option value="@role">@role</option>
+                }
+            </select>
+        </div>
+
+        <button type="submit">Update</button>
+
+    </EditForm>
+    <a href="/users" class="btn btn-secondary">Cancel</a>
+</div>
+
+
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    ApplicationUserRequest User { get; set; } = new();
+
+    List<string> Roles = new() { "User", "SuperUser", "Admin" };//skal egentlig hentes fra serveren
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await http.GetAsync($"api/users/{Id}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var user=await response.Content.ReadFromJsonAsync<ApplicationUserRequest>();
+            if (user != null)
+            {
+                User = user;
+                
+            }
+        }
+    }
+
+    async Task UpdateUser()
+    {
+        var response = await http.PostAsJsonAsync($"api/Users/{Id}", User);
+        if (response.IsSuccessStatusCode)
+        {
+
+            NavMan.NavigateTo("/Users");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+}

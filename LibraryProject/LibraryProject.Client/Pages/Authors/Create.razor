@@ -1,0 +1,55 @@
+﻿@page "/authors/create"
+@inject HttpClient Http
+@inject NavigationManager NavMan
+@using ClassLibrary.Request
+
+
+<h3>Create</h3>
+
+<div class="mb-3 container">
+    <EditForm Model="@author" OnValidSubmit="@AddAuthor">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+        <div class="mb-3">
+            <label for="FirstName" class="form-label">First name</label><br />
+            <InputText id="FirstName" class="form-control" @bind-Value="author.FirstName"/>
+            <ValidationMessage For="@(()=>author.FirstName)"/>
+        </div>
+        <div class="mb-3">
+            <label for="LastName" class="form-label">Last name</label><br />
+            <InputText id="LastName" class="form-control" @bind-Value="author.LastName" />
+            <ValidationMessage For="@(() => author.LastName)" />
+        </div>
+        <div class="mb-3">
+            <label for="Birthyear" class="form-label">Birthyear</label><br />
+            <InputNumber id="Birthyear" class="form-control" @bind-Value="author.Birthyear" />
+            <ValidationMessage For="@(() => author.Birthyear)" />
+        </div>
+        <div class="mb-3">
+            <label for="Deathyear" class="form-label">Deathyear</label><br />
+            <InputNumber id="Deathyear" class="form-control" @bind-Value="author.Deathyear" />
+            <ValidationMessage For="@(() => author.Deathyear)" />
+        </div>
+        <button type="submit">Create</button>
+    </EditForm>
+    <a href="/authors" class="btn btn-secondary">Cancel</a>
+</div>
+
+
+
+@code {
+    AuthorRequest author { get; set; } = new();
+
+    async Task AddAuthor()
+    {
+        var response = await Http.PostAsJsonAsync("api/authors", author);
+        if (response.IsSuccessStatusCode)
+        {
+            NavMan.NavigateTo("/authors");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+}

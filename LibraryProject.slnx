@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ClassLibrary/ClassLibrary.csproj" Id="aef3fc83-7a6c-42a3-8485-faffdd5f8973" />
+  <Project Path="LibraryProject/LibraryProject.Client/LibraryProject.Client.csproj" />
+  <Project Path="LibraryProject/LibraryProject/LibraryProject.csproj" />
+</Solution>

@@ -1,0 +1,60 @@
+﻿@page "/users"
+@inject HttpClient Http
+@using ClassLibrary
+@using ClassLibrary.Request
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles ="Admin, SuperUser")]
+
+<h3>Users</h3>
+<AuthorizeView Roles="Admin,SuperUser">
+    <Authorized>
+        <a href="/Users/create" class="btn btn-sm btn-primary">Create</a>
+    </Authorized>
+</AuthorizeView>
+@if (Users == null)
+{
+
+}
+else
+{
+    <div class="container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Users)
+                {
+                    <tr>
+                        <td>@user.Email</td>
+
+                        
+                        <td>
+                            <a href="/Users/details/@user.Id" class="btn btn-sm btn-success">Details</a>
+                            <AuthorizeView Roles="Admin">
+                                <Authorized>
+                                    <a href="/Users/edit/@user.Id" class="btn btn-sm btn-info">Edit</a>
+                                    <a href="/Users/delete/@user.Id" class="btn btn-sm btn-danger">Delete</a>
+                                </Authorized>
+                            </AuthorizeView>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+
+@code {
+    private List<ApplicationUserRequest>? Users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Users = await Http.GetFromJsonAsync<List<ApplicationUserRequest>>("api/Users");
+    }
+}

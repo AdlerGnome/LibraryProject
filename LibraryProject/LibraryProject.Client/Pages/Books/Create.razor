@@ -1,0 +1,80 @@
+﻿@page "/books/create"
+@inject HttpClient http
+@inject NavigationManager NavMan
+@using ClassLibrary.Request
+@using ClassLibrary.Response
+
+
+<h3>Create</h3>
+
+<div class="mb-3 container">
+    <EditForm Model="@Book" OnValidSubmit="@AddBook">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-3">
+            <label for="Title" class="form-label">Title</label><br />
+            <InputText id="Title" class="form-control" @bind-Value="Book.Title" />
+            <ValidationMessage For="@(() => Book.Title)" />
+        </div>
+        <div class="mb-3">
+            <label for="Edition" class="form-label">Edition</label><br />
+            <InputNumber id="Edition" class="form-control" @bind-Value="Book.Edition" />
+            <ValidationMessage For="@(() => Book.Title)" />
+        </div>
+        <div class="mb-3">
+            <label for="Pagecount" class="form-label">Page count</label><br />
+            <InputNumber id="Pagecount" class="form-control" @bind-Value="Book.Pagecount" />
+            <ValidationMessage For="@(() => Book.Title)" />
+        </div>
+        <div class="mb-3">
+            <label for="Title" class="form-label">In Stock</label><br />
+            <InputNumber id="Stock" class="form-control" @bind-Value="Book.Stock" />
+            <ValidationMessage For="@(() => Book.Stock)" />
+        </div>
+        <div class="mb-3">
+            <label for="PublishYear" class="form-label">Published in</label><br />
+            <InputNumber id="PublishYear" class="form-control" @bind-Value="Book.PublishYear" />
+            <ValidationMessage For="@(() => Book.PublishYear)" />
+        </div>
+        <div class="mb-3">
+            <label for="Description" class="form-label">Description</label><br />
+            <InputText id="Description" class="form-control" @bind-Value="Book.Description" />
+            <ValidationMessage For="@(() => Book.Description)" />
+        </div>
+        <button type="submit">Create</button>
+        author
+        publisher
+    </EditForm>
+    <a href="/books" class="btn btn-secondary">Cancel</a>
+</div>
+
+
+
+@code {
+    BookRequest Book { get; set; } = new();
+    List<SelectListItem> Authors { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await http.GetAsync("api/authors");
+        if (response.IsSuccessStatusCode)
+        {
+            Authors = await response.Content.ReadFromJsonAsync<List<AuthorResponse>>();
+        }
+    }
+
+    
+    
+    async Task AddBook()
+    {
+        var response = await http.PostAsJsonAsync("api/Books", Book);
+        if (response.IsSuccessStatusCode)
+        {
+            NavMan.NavigateTo("/Books");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+}

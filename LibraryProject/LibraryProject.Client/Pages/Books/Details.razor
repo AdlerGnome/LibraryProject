@@ -1,0 +1,145 @@
+﻿@page "/books/details/{Id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavMan
+@using System.Security.Claims
+@using ClassLibrary.Request
+@using ClassLibrary.Response
+@using Microsoft.AspNetCore.Components.Authorization
+
+@if (!Ready)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="container">
+        <h3>@Book.Title</h3>
+        <h5>
+            <a href="/authors/details/@Book.Author.Id">
+                @Book.Author.FirstName @Book.Author.LastName
+            </a>
+        </h5>
+        <div class="row align-items-start">
+            <div class="col-6">
+                @Book.Description
+            </div>
+            <div class="col-2 text-end">
+                <p>
+                    <strong>Published: </strong> @Book.PublishYear<br/>
+                    <strong>Edition: </strong> @Book.Edition<br />
+                    <strong>Page count: </strong> @Book.Pagecount<br />
+                    <strong>Available: </strong> @Book.Stock<br />
+                    <AuthorizeView>
+                        <Authorized>
+                            @if (Book.Stock > 0 && Borrowed == false)
+                            {
+                                <button onclick="@BorrowBook" class="btn btn-primary">Borrow</button>
+                            }
+                            else if (UserId != "" && Borrowed == true)
+                            {
+                                <button onclick="@ReturnBook" class="btn btn-primary">Return</button>
+                            }
+                        </Authorized>
+                    </AuthorizeView>
+                    <a href="/books" class="btn btn-secondary">Back to book list</a>
+                </p>
+            </div>
+        </div>        
+    </div>    
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    BookResponse? Book { get; set; }
+
+    private string UserId = "";
+    private bool Borrowed = false;
+    private bool Ready = false;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Http.GetAsync($"api/books/{Id}");
+
+        //hent om bogen er udlånt af bruger
+
+        if (response.IsSuccessStatusCode)
+            Book = await response.Content.ReadFromJsonAsync<BookResponse>();
+        else
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
+        UserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                          ?? user.FindFirst("sub")?.Value;
+
+        Console.WriteLine($"Current user id: {UserId}");
+
+
+        if (UserId != null)
+        {
+            await CheckBorrowStatus();
+        }
+        Ready = true;
+        StateHasChanged();
+    }
+
+    private async Task BorrowBook()
+    {
+        var borrow = new BorrowRequest() { UId = UserId, BId = Id };
+
+        var response = await Http.PostAsJsonAsync($"api/borrow/", borrow);
+        if (response.IsSuccessStatusCode)
+        {
+            //pop-up/toast - success
+            NavMan.NavigateTo("/books");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+
+    private async void ReturnBook()
+    {
+        var borrow = new BorrowRequest() { UId = UserId, BId = Id };
+
+        var response = await Http.PutAsJsonAsync($"api/borrow/{Id}", borrow);
+        if (response.IsSuccessStatusCode)
+        {
+            //pop-up/toast - success
+            NavMan.NavigateTo("/books");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+
+    private async Task CheckBorrowStatus()
+    {
+
+        var response = await Http.GetAsync($"api/borrow/{UserId}");
+
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            var list = await response.Content.ReadFromJsonAsync<List<BorrowResponse>>() ?? [];
+
+            if (list.Count > 0)
+            {
+                foreach (var item in list)
+                {
+                    if (item.BId == Id)
+                        Borrowed = true;
+                }
+            }
+        }
+
+    }
+}

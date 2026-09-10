@@ -1,0 +1,62 @@
+﻿@page "/books/delete/{Id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavMan
+@using ClassLibrary.Response
+
+<h3>Delete</h3>
+
+@if (Book == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="container">
+        <p><strong>Name: </strong> @Book.Title</p>
+        <p><strong>Published: </strong> @Book.PublishYear</p>
+        <p><strong>Edition: </strong> @Book.Edition</p>
+        <p><strong>Page count: </strong> @Book.Pagecount</p>
+        <p><strong>Available: </strong> @Book.Stock</p>
+        <p><strong>Description: </strong> @Book.Description</p>
+        <a href="/books" class="btn btn-secondary">Cancel</a>
+        <button class="btn btn-danger" @onclick="DeleteBook">Delete</button>
+    </div>
+
+    <div class="container">
+        <p><strong>Author: </strong> @Book.Author.FirstName @Book.Author.LastName</p>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    BookResponse? Book { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Http.GetAsync($"api/books/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            Book = await response.Content.ReadFromJsonAsync<BookResponse>();
+
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+
+    async Task DeleteBook()
+    {
+        var response = await Http.DeleteAsync($"api/books/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            NavMan.NavigateTo("/books");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+}

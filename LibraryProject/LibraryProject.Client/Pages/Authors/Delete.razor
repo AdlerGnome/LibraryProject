@@ -1,0 +1,80 @@
+﻿@page "/authors/delete/{Id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavMan
+@using ClassLibrary.Response
+
+<h3>Delete</h3>
+
+@if (Author == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="container">
+        <p><strong>Name: </strong> @Author.FirstName @Author.LastName</p>
+
+        <p><strong>Birthyear: </strong> @Author.Birthyear</p>
+        @if (Author.Deathyear != 0)
+        {
+            <p><strong>Deathyear: </strong> @Author.Deathyear</p>
+        }
+        <button class="btn btn-danger" @onclick="DeleteAuthor">Delete</button>
+        <a href="/authors" class="btn btn-secondary">Cancel</a>
+    </div>
+    <div class="container">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var book in Author.Books)
+                {
+                    <tr>
+                        <td>@book.Title</td>
+                        <td>
+                            <a href="/books/details/@book.Id" class="btn-link">Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    AuthorResponse? Author { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Http.GetAsync($"api/authors/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            Author = await response.Content.ReadFromJsonAsync<AuthorResponse>();
+
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+
+    async Task DeleteAuthor()
+    {
+        var response = await Http.DeleteAsync($"api/authors/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            NavMan.NavigateTo("/authors");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+}

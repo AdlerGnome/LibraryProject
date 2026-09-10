@@ -1,0 +1,60 @@
+﻿@page "/authors/details/{AId:int}"
+@inject HttpClient Http
+@inject NavigationManager NavMan
+@using ClassLibrary.Response
+
+@if (Author == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="container">
+        <h3> @Author.FirstName @Author.LastName</h3>
+
+        <p><strong>Birthyear: </strong> @Author.Birthyear</p>
+        @if (Author.Deathyear != 0)
+        {
+            <p><strong>Deathyear: </strong> @Author.Deathyear</p>
+        }
+        <a href="/authors" class="btn btn-secondary">Back to author list</a>
+    </div>
+    <div class="container">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Books by @Author.FirstName @Author.LastName</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var book in Author.Books)
+                {
+                    <tr>
+                        <td>@book.Title</td>
+                        <td>
+                            <a href="/books/details/@book.Id" class="btn-link">Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int AId { get; set; }
+
+    AuthorResponse? Author { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Http.GetAsync($"api/authors/{AId}");
+
+        if (response.IsSuccessStatusCode)
+            Author = await response.Content.ReadFromJsonAsync<AuthorResponse>();
+        else
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+    }
+}

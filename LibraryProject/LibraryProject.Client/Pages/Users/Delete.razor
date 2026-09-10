@@ -1,0 +1,52 @@
+﻿@page "/users/delete/{Id}"
+@using ClassLibrary
+@using ClassLibrary.Request
+@inject HttpClient Http
+@inject NavigationManager NavMan
+
+<h3>Delete</h3>
+@if (User == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="container">
+        <p><strong>Email: </strong> @User.Email</p>
+        <a href="/users" class="btn btn-secondary">Cancel</a>
+        <button class="btn btn-danger" @onclick="DeleteUser">Delete</button>
+    </div>
+}
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    ApplicationUserRequest? User { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Http.GetAsync($"api/users/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            User = await response.Content.ReadFromJsonAsync<ApplicationUserRequest>();
+
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+
+    async Task DeleteUser()
+    {
+        var response = await Http.DeleteAsync($"api/users/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            NavMan.NavigateTo("/users");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+}

@@ -1,0 +1,89 @@
+﻿@page "/authors/edit/{Id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavMan
+@using ClassLibrary.Request
+@using ClassLibrary.Response
+
+<h3>Edit</h3>
+
+
+@if (Author == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="mb-3 container">
+        <EditForm Model="@Author" OnValidSubmit="@EditAuthor">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="mb-3">
+                <label for="FirstName" class="form-label">First name</label><br />
+                <InputText id="FirstName" class="form-control" @bind-Value="Author.FirstName" />
+                <ValidationMessage For="@(() => Author.FirstName)" />
+            </div>
+            <div class="mb-3">
+                <label for="LastName" class="form-label">Last name</label><br />
+                <InputText id="LastName" class="form-control" @bind-Value="Author.LastName" />
+                <ValidationMessage For="@(() => Author.LastName)" />
+            </div>
+            <div class="mb-3">
+                <label for="Birthyear" class="form-label">Birthyear</label><br />
+                <InputNumber id="Birthyear" class="form-control" @bind-Value="Author.Birthyear" />
+                <ValidationMessage For="@(() => Author.Birthyear)" />
+            </div>
+            <div class="mb-3">
+                <label for="Deathyear" class="form-label">Deathyear</label><br />
+                <InputNumber id="Deathyear" class="form-control" @bind-Value="Author.Deathyear" />
+                <ValidationMessage For="@(() => Author.Deathyear)" />
+            </div>
+            <button type="submit">Confirm</button>
+        </EditForm>      
+        <a href="/authors" class="btn btn-secondary">Cancel</a>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    AuthorRequest? Author { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Http.GetAsync($"api/authors/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            var author = await response.Content.ReadFromJsonAsync<AuthorResponse>();
+            if (author != null)
+            {
+                Author = new()
+                {
+                    FirstName = author.FirstName,
+                    LastName = author.LastName,
+                    Birthyear = author.Birthyear,
+                    Deathyear = author.Deathyear
+                };
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+
+
+
+    async Task EditAuthor()
+    {
+        var response = await Http.PutAsJsonAsync($"api/authors/{Id}", Author);
+        if (response.IsSuccessStatusCode)
+        {
+            NavMan.NavigateTo("/authors");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {response.ReasonPhrase}");
+        }
+    }
+}

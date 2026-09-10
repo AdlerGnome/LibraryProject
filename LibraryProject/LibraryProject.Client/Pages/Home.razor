@@ -1,0 +1,59 @@
+﻿@page "/"
+@inject HttpClient Http
+@using ClassLibrary.Response
+
+<PageTitle>Home</PageTitle>
+
+<h1>Welcome to the library</h1>
+
+tre cards af bøger
+et card med author
+
+når logget ind: sidebar med lånte bøger
+@if (Books == null)
+{ }
+else
+{
+    <div class="container text-center">
+        <div class="row align-items-start">
+            @foreach (var book in Books)
+            {
+                <div class="col">
+                    <div class="card" style="width: 18rem">
+                        <div class="card-body">
+                            hello
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code
+{
+    private List<BookResponse> Books { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        //ThreeRandomBooks();
+    }
+
+    private async void ThreeRandomBooks()
+    {
+        Random rand = new();
+        for (int i = 0; i < 3; i++)
+        {
+            while (true)
+            {
+                var number = rand.Next();
+                var book = await Http.GetFromJsonAsync<BookResponse>($"api/books/{number}");
+                if (book != null)
+                {
+                    Books.Add(book);
+                    break;
+                }
+            }
+        }
+    }
+}
