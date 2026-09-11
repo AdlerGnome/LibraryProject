@@ -9,5 +9,6 @@ namespace ClassLibrary.Request
     {
         public string? UId { get; set; }
         public int BId { get; set; }
+        public string? Username { get; set; }
     }
 }

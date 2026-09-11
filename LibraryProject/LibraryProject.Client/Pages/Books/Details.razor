@@ -6,7 +6,7 @@
 @using ClassLibrary.Response
 @using Microsoft.AspNetCore.Components.Authorization
 
-@if (!Ready)
+@if (Book == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -25,27 +25,27 @@ else
             </div>
             <div class="col-2 text-end">
                 <p>
-                    <strong>Published: </strong> @Book.PublishYear<br/>
+                    <strong>Published: </strong> @Book.PublishYear<br />
                     <strong>Edition: </strong> @Book.Edition<br />
                     <strong>Page count: </strong> @Book.Pagecount<br />
                     <strong>Available: </strong> @Book.Stock<br />
-                    <AuthorizeView>
-                        <Authorized>
-                            @if (Book.Stock > 0 && Borrowed == false)
-                            {
-                                <button onclick="@BorrowBook" class="btn btn-primary">Borrow</button>
-                            }
-                            else if (UserId != "" && Borrowed == true)
-                            {
-                                <button onclick="@ReturnBook" class="btn btn-primary">Return</button>
-                            }
+                    <AuthorizeView >
+                                <Authorized>
+                    @if (Book.Stock > 0 && Borrowed == false)
+                    {
+                        <button @onclick="BorrowBook" class="btn btn-primary">Borrow</button>
+                    }
+                    @if (UserId != "" && Borrowed == true)
+                    {
+                        <button @onclick="ReturnBook" class="btn btn-primary">Return</button>
+                    }
+                    <a href="/books" class="btn btn-secondary">Back to book list</a>
                         </Authorized>
                     </AuthorizeView>
-                    <a href="/books" class="btn btn-secondary">Back to book list</a>
                 </p>
             </div>
-        </div>        
-    </div>    
+        </div>
+    </div>
 }
 
 @code {
@@ -55,6 +55,7 @@ else
     BookResponse? Book { get; set; }
 
     private string UserId = "";
+    private string UserName = "";
     private bool Borrowed = false;
     private bool Ready = false;
 
@@ -62,37 +63,50 @@ else
     private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
 
-
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        var response = await Http.GetAsync($"api/books/{Id}");
+        await LoadAsync();
+    }
 
-        //hent om bogen er udlånt af bruger
+    protected override void OnInitialized()
+    {
+        NavMan.LocationChanged += LocationChangedHandler;
+    }
 
-        if (response.IsSuccessStatusCode)
-            Book = await response.Content.ReadFromJsonAsync<BookResponse>();
-        else
-            Console.WriteLine($"Error: {response.ReasonPhrase}");
+    private async void LocationChangedHandler(object? sender, LocationChangedEventArgs e)
+    {
+        // if navigated to this page again, reload
+        var relative = NavMan.ToBaseRelativePath(e.Location);
+        if (relative.StartsWith($"books/details/{Id}"))
+            await LoadAsync();
+    }
 
+    private async Task LoadAsync()
+    {
         var authState = await AuthenticationStateTask;
+        UserName = authState.User.Identity.Name;
         var user = authState.User;
         UserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                          ?? user.FindFirst("sub")?.Value;
+                 ?? user.FindFirst("sub")?.Value
+                    ?? user.FindFirst("nameid")?.Value;
 
-        Console.WriteLine($"Current user id: {UserId}");
+        Console.WriteLine("Current userid: " + UserId);
+        Console.WriteLine("Current username: " + UserName);
 
+        var response = await Http.GetAsync($"api/books/{Id}");
+        if (response.IsSuccessStatusCode)
+            Book = await response.Content.ReadFromJsonAsync<BookResponse>();
 
-        if (UserId != null)
-        {
+        if (!string.IsNullOrEmpty(UserName))
             await CheckBorrowStatus();
-        }
-        Ready = true;
+
         StateHasChanged();
     }
 
     private async Task BorrowBook()
     {
-        var borrow = new BorrowRequest() { UId = UserId, BId = Id };
+        Console.WriteLine("Current userid: " + UserId);
+        var borrow = new BorrowRequest() { UId = UserId, BId = Id,Username=UserName };
 
         var response = await Http.PostAsJsonAsync($"api/borrow/", borrow);
         if (response.IsSuccessStatusCode)
@@ -108,7 +122,7 @@ else
 
     private async void ReturnBook()
     {
-        var borrow = new BorrowRequest() { UId = UserId, BId = Id };
+        var borrow = new BorrowRequest() { UId = UserId, BId = Id, Username = UserName };
 
         var response = await Http.PutAsJsonAsync($"api/borrow/{Id}", borrow);
         if (response.IsSuccessStatusCode)
@@ -125,21 +139,25 @@ else
     private async Task CheckBorrowStatus()
     {
 
-        var response = await Http.GetAsync($"api/borrow/{UserId}");
+        var response = await Http.GetAsync($"api/borrow/{UserName}");
 
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
-            var list = await response.Content.ReadFromJsonAsync<List<BorrowResponse>>() ?? [];
+            var list = await response.Content.ReadFromJsonAsync<List<BookResponse>>() ?? [];
 
             if (list.Count > 0)
             {
                 foreach (var item in list)
                 {
-                    if (item.BId == Id)
+                    if (item.Id == Id)
                         Borrowed = true;
                 }
             }
         }
 
+    }
+    public void Dispose()
+    {
+        NavMan.LocationChanged -= LocationChangedHandler;
     }
 }

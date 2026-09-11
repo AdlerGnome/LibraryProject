@@ -44,12 +44,12 @@ namespace LibraryProject.Repository
             }
         }
 
-        public async Task<List<BorrowedBook>> SelectAllForUser(string userId)
+        public async Task<List<BorrowedBook>> SelectAllForUser(string userName)
         {
             try
             {
                 return await _context.BorrowedBook
-                    .Where(b => b.UId == userId)
+                    .Where(b => b.UId == userName)
                     .ToListAsync();
             }
             catch (Exception)

@@ -3,6 +3,8 @@
 @using ClassLibrary.Request
 @inject HttpClient Http
 @inject NavigationManager NavMan
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin,SuperUser")]
 
 <h3>Details</h3>
 

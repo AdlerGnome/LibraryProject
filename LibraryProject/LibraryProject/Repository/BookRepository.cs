@@ -13,7 +13,7 @@ namespace LibraryProject.Repository
         public BookRepository(ApplicationDbContext context)
         {
             _context = context;
-        }        
+        }
 
         public async Task<Book> Delete(int id)
         {

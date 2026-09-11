@@ -1,4 +1,5 @@
 ﻿using ClassLibrary.Request;
+using ClassLibrary.Response;
 using LibraryProject.Data.Models;
 
 namespace LibraryProject.Interfaces.Service
@@ -7,6 +8,6 @@ namespace LibraryProject.Interfaces.Service
     {
         Task<bool> BorrowBook(BorrowRequest borrow);
         Task<bool> ReturnBook(BorrowRequest borrow);
-        Task<List<BorrowedBook>> SelectAllForUser(string userId);
+        Task<List<BookResponse>> SelectAllForUser(string userId);
     }
 }

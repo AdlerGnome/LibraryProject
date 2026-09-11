@@ -4,8 +4,10 @@ using LibraryProject.Data;
 using LibraryProject.Data.Models;
 using LibraryProject.Interfaces.Service;
 using LibraryProject.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
 
 [Route("api/[controller]")]
 [ApiController]
@@ -62,6 +64,7 @@ public class AuthorsController : ControllerBase
 
     // PUT: api/Author/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    [Authorize(Roles = "Admin,SuperUser")]
     [HttpPut("{Id}")]
     public async Task<IActionResult> PutAuthor(int Id, AuthorRequest author)
     {
@@ -81,6 +84,7 @@ public class AuthorsController : ControllerBase
 
     // POST: api/Author
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    [Authorize(Roles = "Admin,SuperUser")]
     [HttpPost]
     public async Task<ActionResult<AuthorResponse>> PostAuthor(AuthorRequest author)
     {
@@ -100,6 +104,7 @@ public class AuthorsController : ControllerBase
     }
 
     // DELETE: api/Author/5
+    [Authorize(Roles = "Admin,SuperUser")]
     [HttpDelete("{Id}")]
     public async Task<IActionResult> DeleteAuthor(int Id)
     {

@@ -2,6 +2,8 @@
 @inject HttpClient Http
 @inject NavigationManager NavMan
 @using ClassLibrary.Response
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin, SuperUser")]
 
 <h3>Delete</h3>
 

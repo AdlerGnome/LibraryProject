@@ -18,8 +18,4 @@
     <ProjectReference Include="..\..\ClassLibrary\ClassLibrary.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Pages\ChildComponents\" />
-  </ItemGroup>
-
 </Project>

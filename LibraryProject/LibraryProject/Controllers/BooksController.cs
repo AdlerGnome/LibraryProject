@@ -5,8 +5,10 @@ using LibraryProject.Data;
 using LibraryProject.Data.Models;
 using LibraryProject.Interfaces.Service;
 using LibraryProject.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
 
 [Route("api/[controller]")]
 [ApiController]
@@ -64,6 +66,7 @@ public class BooksController : ControllerBase
 
     // PUT: api/Book/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    [Authorize(Roles = "Admin,SuperUser")]
     [HttpPut("{id}")]
     public async Task<IActionResult> PutBook(int id, BookRequest book)
     {
@@ -84,6 +87,7 @@ public class BooksController : ControllerBase
 
     // POST: api/Book
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    [Authorize(Roles = "Admin,SuperUser")]
     [HttpPost]
     public async Task<ActionResult<BookResponse>> PostBook(BookRequest book)
     {
@@ -103,6 +107,7 @@ public class BooksController : ControllerBase
     }
 
     // DELETE: api/Book/5
+    [Authorize(Roles = "Admin,SuperUser")]
     [HttpDelete("{bid}")]
     public async Task<IActionResult> DeleteBook(int id)
     {

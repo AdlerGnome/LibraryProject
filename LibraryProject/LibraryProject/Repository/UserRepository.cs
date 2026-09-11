@@ -78,6 +78,18 @@ namespace LibraryProject.Repository
             }
         }
 
+        public async Task<ApplicationUser> SelectByUserName(string username)
+        {
+            try
+            {
+                return await _context.Users.FirstOrDefaultAsync(user => user.UserName == username);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public async Task<ApplicationUser> Update(string id, ApplicationUser user)
         {
             try

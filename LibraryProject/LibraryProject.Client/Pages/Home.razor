@@ -1,59 +1,108 @@
 ﻿@page "/"
 @inject HttpClient Http
 @using ClassLibrary.Response
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 
 <PageTitle>Home</PageTitle>
 
-<h1>Welcome to the library</h1>
+<div class="container">
+    <h1>Welcome to the library</h1>
+</div>
 
-tre cards af bøger
-et card med author
-
-når logget ind: sidebar med lånte bøger
-@if (Books == null)
+@if (RandomBooks == null)
 { }
 else
 {
-    <div class="container text-center">
-        <div class="row align-items-start">
-            @foreach (var book in Books)
+    <div class="row">
+        <div class="col-8">
+            Wanna try a random book?
+            @foreach (var book in RandomBooks)
             {
                 <div class="col">
-                    <div class="card" style="width: 18rem">
-                        <div class="card-body">
-                            hello
+                    <a href="/books/details/@book.Id">
+                        <div class="card" style="width: 18rem">
+                            <div class="card-body">
+                                <div class="card-title">@book.Title</div>
+                                <div class="card-text">
+                                    Written by @book.Author.FirstName @book.Author.LastName
+                                </div>
+
+                                
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             }
+        </div>
+        <div class="col-4" style="display: block" id="borrowedList">
+            @if (UserId != "")
+            {
+                <ul id="borrowedList">
+                    You are currently borrowing the following books:
+                    @foreach (var book in BorrowedBooks)
+                    {
+                        <li>@book.Title</li>
+                    }
+                </ul>
+            }
+        </div>
+
+    </div>
+    <div class="container text-center">
+        <div class="row align-items-start">
+            
         </div>
     </div>
 }
 
+
 @code
 {
-    private List<BookResponse> Books { get; set; } = [];
+    private List<BookResponse> BorrowedBooks { get; set; } = [];
+    private List<BookResponse> RandomBooks { get; set; } = [];
+    private string UserName = "";
+    string myStyle="none";
+
+    private string? UserId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        //ThreeRandomBooks();
+        var authState = await AuthenticationStateTask;
+        UserName = authState.User.Identity.Name;
+        var user = authState.User;
+        UserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                          ?? user.FindFirst("sub")?.Value;
+
+        Console.WriteLine($"Current user id: {UserId}");
+
+        if (UserName != null)
+        {
+           await LoadDataAsync(UserName);
+        }
+         await ThreeRandomBooks();
+        StateHasChanged();
     }
 
-    private async void ThreeRandomBooks()
+    private async Task LoadDataAsync(string UserName)
     {
-        Random rand = new();
-        for (int i = 0; i < 3; i++)
+        var response = await Http.GetAsync($"api/borrow/{UserName}");
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
-            while (true)
-            {
-                var number = rand.Next();
-                var book = await Http.GetFromJsonAsync<BookResponse>($"api/books/{number}");
-                if (book != null)
-                {
-                    Books.Add(book);
-                    break;
-                }
-            }
+            BorrowedBooks = await response.Content.ReadFromJsonAsync<List<BookResponse>>();
+            myStyle = "block";
+        }
+    }
+
+    private async Task ThreeRandomBooks()
+    {
+        var response = await Http.GetAsync($"api/home");
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            RandomBooks = await response.Content.ReadFromJsonAsync<List<BookResponse>>();
         }
     }
 }

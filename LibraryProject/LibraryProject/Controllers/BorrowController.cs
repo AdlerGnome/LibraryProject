@@ -5,11 +5,13 @@ using LibraryProject.Data;
 using LibraryProject.Data.Models;
 using LibraryProject.Interfaces.Service;
 using LibraryProject.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryProject.Controllers
 {
+    
     [Route("api/[controller]")]
     [ApiController]
     public class BorrowController : Controller
@@ -20,7 +22,7 @@ namespace LibraryProject.Controllers
         {
             _borrowService = borrowService;
         }
-
+        
         [HttpPost]
         public async Task<ActionResult<bool>> PostBorrow(BorrowRequest borrow)
         {
@@ -40,6 +42,7 @@ namespace LibraryProject.Controllers
         }
 
         // Put: api/Book/5
+        
         [HttpPut("{bid}")]//Technically shoudl be delete, but we need two Id's and this is easier
         public async Task<IActionResult> PutBorrow(BorrowRequest borrow)
         {
@@ -58,12 +61,12 @@ namespace LibraryProject.Controllers
             }
         }
 
-        [HttpGet("{Id}")]
-        public async Task<ActionResult<IEnumerable<BorrowedBook>>> GetUserBorrows(string Id)
+        [HttpGet("{Username}")]
+        public async Task<ActionResult<IEnumerable<BookResponse>>> GetUserBorrows(string Username)
         {
             try
             {
-                var response = await _borrowService.SelectAllForUser(Id);
+                var response = await _borrowService.SelectAllForUser(Username);
                 if (response == null)
                 {
                     return Problem("Got no list");
@@ -79,5 +82,5 @@ namespace LibraryProject.Controllers
                 return Problem(e.Message);
             }
         }
-        }
+    }
 }

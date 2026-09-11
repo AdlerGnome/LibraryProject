@@ -24,16 +24,14 @@ else
             <thead>
                 <tr>
                     <th>Books by @Author.FirstName @Author.LastName</th>
-                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var book in Author.Books)
                 {
                     <tr>
-                        <td>@book.Title</td>
                         <td>
-                            <a href="/books/details/@book.Id" class="btn-link">Details</a>
+                            <a href="/books/details/@book.Id" class="btn-link">@book.Title</a>
                         </td>
                     </tr>
                 }

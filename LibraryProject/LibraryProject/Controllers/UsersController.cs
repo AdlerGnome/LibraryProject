@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryProject.Controllers
 {
+    [Authorize(Roles = "Admin,SuperUser")]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : Controller
@@ -60,6 +61,7 @@ namespace LibraryProject.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{Id}")]
         public async Task<IActionResult> PutUser(string Id, ApplicationUserRequest user)
         {
@@ -96,6 +98,7 @@ namespace LibraryProject.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{Id}")]
         public async Task<IActionResult> DeleteUser(string Id)
         {

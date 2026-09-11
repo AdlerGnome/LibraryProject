@@ -88,7 +88,7 @@ namespace LibraryProject.Service
             }
         }
 
-        private BookResponse MapBookToResponse(Book book)
+        public static BookResponse MapBookToResponse(Book book)
         {
             try
             {

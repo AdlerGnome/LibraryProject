@@ -4,7 +4,9 @@ using System.Text;
 
 namespace ClassLibrary
 {
-    internal class SelectListItem
+    public class SelectListItem
     {
+        public int Value;
+        public string Text;
     }
 }

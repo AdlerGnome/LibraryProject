@@ -3,6 +3,8 @@
 @inject NavigationManager NavMan
 @using ClassLibrary.Request
 @using ClassLibrary.Response
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin, SuperUser")]
 
 <h3>Edit</h3>
 

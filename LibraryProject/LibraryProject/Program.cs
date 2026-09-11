@@ -39,7 +39,7 @@ namespace LibraryProject
             builder.Services.AddScoped<IBookService, BookService>();
             builder.Services.AddScoped<IBorrowService, BorrowService>();
             builder.Services.AddScoped<IUserService, UserService>();
-
+            builder.Services.AddScoped<IHomeService, HomeService>();
 
 
             builder.Services.AddAuthentication(options =>
